@@ -1,4 +1,4 @@
-# Example of Refactoring with Ruby
+# Example of Refactoring with Ruby(lab1)
 
 This project goes about transforming an unstructured ruby script of a Guess
 Game all the way up to separating it in different classes.
