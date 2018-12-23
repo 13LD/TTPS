@@ -1,98 +1,225 @@
-puts "Welcome to Word Guess Game!
-       The theme is: pets!"
-puts "The rules are as follows:
-       Enter one letter at a time
-       If correct, the letter will be filled in
-       If incorrect, you will lose a petal
-       If all your petals are gone, you lose
-       If you guess all correct letters in Word you win!!!"
-
-chances = 5
-flower = "(@)"
-
-bouquet = '
-  \, \, |, /, /
-      _\|/_
-     |_____|
-      |   |
-      |___|
- '
-print flower * chances
-print bouquet
-
-
-words = [ ["C", "A", "T"],
-          ["D", "O", "G"],
-          ["C", "H", "I", "N", "C", "H", "I", "L", "L", "A"],
-          ["F", "E", "R", "R", "E", "T"],
-          ["H", "A", "M", "S", "T", "E", "R"],
-          ["I", "G", "U", "A", "N", "A"],
-          ["S", "N", "A", "K", "E"]
-]
-#shuffle words in array and pick first element
-word = words.shuffle[0]
-#use the length of that word to create the right number of underscore spots
-under_word = ["_"] * word.length
-
-#run the program
-runtime = word.length + chances
-all_guesses = []
-runtime.times do
-  #will run until no more chances, then program exits
-  if chances == 0
-    exit
+# Controls the logic of the game
+class GuessGame
+  def initialize
+    @printer = Printer.new
+    @chances = Chances.new(5)
+    @word = RandomWord.new.pick
+    @under_word = UnderWord.new(@word)
+    @user_guesses = UserGuesses.new
+    @game_status = GameStatus.new(@word)
   end
 
-  #start with underscore 'word', will update with actual letters guessed as it loops
-  puts "Here is your word: #{under_word}"
-  puts "Enter one letter: "
+  def run
+    @printer.welcome
+    @printer.chance_flowers(@chances.get)
 
-  #prep user input to go through conditionals
-  user_guess = gets.chomp.upcase.to_s
-
-  #check for letter
-  until /[A-Z]/.match(user_guess)
-    puts "Invalid. Please enter a new letter: "
-    user_guess = gets.chomp.upcase
-  end
-  #make sure it has not been guessed yet
-  #also if more than one letter is entered, only take the first
-  until all_guesses.include?(user_guess[0]) == FALSE
-    puts "That's been guessed already. Please enter a new letter.\n\n"
-    user_guess = gets.chomp.upcase
-  end
-
-  #output the letter picked
-  puts "You chose: #{user_guess[0]}"
-  #put that letter into array of all letters guessed
-  all_guesses << user_guess[0]
-  #output all letters picked so far
-  puts "\n\nHere are your letters so far : #{all_guesses}\n\n"
-
-  #when a correct letter is picked
-  if word.include?(user_guess)
-    puts "YOU GUESSED A CORRECT LETTER!"
-    #replace the underscore with its correct letter value
-    if word.include?(user_guess)
-      location = word.index(user_guess)
-      under_word[location] = user_guess
+    while @chances.positive? && !@game_status.finished?
+      @printer.under_word(@under_word.get)
+      user_guess = @user_guesses.prompt
+      validate(user_guess)
     end
-    #when all letters are guess, player wins!
-    if word.all? { |e| all_guesses.include?(e) }
-      puts "You win!"
-      puts "The word is: #{word}"
-      exit
+  end
+
+  def validate(user_guess)
+    if @word.include?(user_guess)
+      correct_guess(user_guess)
+    else
+      wrong_guess
     end
-  else
-    #if letter is incorrect, remove a petal
-    chances -= 1
-    puts "THAT IS INCORRECT. You lose a petal!\n\n"
+  end
+
+  def correct_guess(user_guess)
+    puts 'YOU GUESSED A CORRECT LETTER!'
+
+    @under_word.fill(user_guess)
+    @game_status.check_win(@user_guesses)
+  end
+
+  def wrong_guess
+    @chances.decrease
+    @printer.point_lost(@chances.get)
+    @printer.game_over(@word) if @chances.zero?
+  end
+end
+
+# Prints messages of the game
+class Printer
+  def welcome
+    puts "Welcome to Word Guess Game!
+          The theme is: pets!"
+
+    puts "The rules are as follows:
+          Enter one letter at a time
+          If correct, the letter will be filled in
+          If incorrect, you will lose a petal
+          If all your petals are gone, you lose
+          If you guess all correct letters in Word you win!!!"
+  end
+
+  def under_word(word)
+    puts "Here is your word: #{word}"
+  end
+
+  def chance_flowers(chances)
+    flower = '(@)'
     print flower * chances
     print bouquet
-    #when there are no more chances left, player loses and program ends
-    if chances == 0
-      puts "\n\nYOU RAN OUT OF PETALS. YOU LOSE THE GAME\n\n\n"
-      puts "The word was: #{word}"
+  end
+
+  def point_lost(chances)
+    puts "THAT IS INCORRECT. You lose a petal!\n\n"
+    chance_flowers(chances)
+  end
+
+  def game_over(word)
+    puts "\n\nYOU RAN OUT OF PETALS. YOU LOSE THE GAME\n\n\n"
+    puts "The word was: #{word}"
+  end
+
+  private
+
+  def bouquet
+    '
+     \, \, |, /, /
+         _\|/_
+        |_____|
+         |   |
+         |___|
+    '
+  end
+end
+
+# Stores words and yields them randomly
+class RandomWord
+  def pick
+    words.sample.split('')
+  end
+
+  private
+
+  def words
+    %w( CAT
+        DOG
+        CHINCHILLA
+        FERRET
+        HAMSTER
+        IGUANA
+        SNAKE )
+  end
+end
+
+# Queries new user input and keeps track of it
+class UserGuesses
+  def initialize
+    @all_guesses = []
+  end
+
+  def prompt
+    puts 'Enter one letter: '
+
+    loop do
+      user_guess = gets.chomp.upcase.to_s
+      next unless parse(user_guess)
+
+      register(user_guess)
+
+      return user_guess
+    end
+  end
+
+  def correctly_guess?(word)
+    word.all? { |letter| @all_guesses.include? letter }
+  end
+
+  def all
+    @all_guesses
+  end
+
+  def register(guess)
+    puts "You chose: #{guess}"
+    @all_guesses << guess
+    puts "\n\nHere are your letters so far : #{@all_guesses}\n\n"
+  end
+
+  def parse(guess)
+    unless valid? guess
+      puts 'Invalid. Please enter a new letter:'
+      return false
+    end
+
+    if @all_guesses.include? guess
+      puts "That's been guessed already. Please enter a new letter.\n\n"
+      return false
+    end
+
+    true
+  end
+
+  def valid?(guess)
+    guess =~ /[A-Z]/ && guess.length == 1
+  end
+end
+
+# Handles the filling of letters under the chosen word
+class UnderWord
+  def initialize(word)
+    @word = word
+    @under_word = ['_'] * @word.length
+  end
+
+  def get
+    @under_word
+  end
+
+  def fill(user_guess)
+    @word.each_with_index do |letter, i|
+      @under_word[i] = letter if letter == user_guess
     end
   end
 end
+
+# Handle user chances in the game
+class Chances
+  def initialize(chances)
+    @chances = chances
+  end
+
+  def get
+    @chances
+  end
+
+  def zero?
+    @chances == 0
+  end
+
+  def positive?
+    @chances > 0
+  end
+
+  def decrease
+    @chances -= 1
+  end
+end
+
+# Checks if game if finished base on the completion of the word
+class GameStatus
+  def initialize(word)
+    @finished = false
+    @word = word
+  end
+
+  def finished?
+    @finished
+  end
+
+  def check_win(user_guesses)
+    return unless user_guesses.correctly_guess? @word
+
+    puts 'You win!'
+    puts "The word is: #{@word}"
+
+    @finished = true
+  end
+end
+
+GuessGame.new.run
