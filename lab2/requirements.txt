@@ -1,0 +1,26 @@
+Euro Diffusion requirements
+
+Functional requirements
+
+1. Program must compose the diffusion model from the input file of given structure. 
+2. Model must operate with countries and cities as core entities.
+3. Each city should be defined by its unique coordinates and must belong to a single country. 
+4. Each country should be defined by its name and coordinates of its south-west and north-east corner cities. 
+5. Each city should have initial amount of coins (1.000.000) of its country. 
+6. Program should emulate day-by-day transaction progress between direct 
+   neigthbour cities (northern, southern, eastern and western).
+7. Program should count amount of coins for its city to pay to its neigthbours. 
+8. Amount to pay should be considered as 0,1% of the current amount for each country.
+9. Program should mark city as ready when it has non-zero amount of each countries coins. 
+9.a. Ready cities still perform transactions. 
+10. Program should mark city as ready when all its cities are marked as ready. 
+11. Program should count amount of days for each country to become ready.
+12. Program should produce the output of given structure.
+
+Non-functional requirements
+
+1. Program should detect incorrect input data. 
+2. Program should detect isolated countries.
+3. Program should have single entry point.
+4. Program code should be organized into modules. 
+5. Each module should be covered with unit tests. 
