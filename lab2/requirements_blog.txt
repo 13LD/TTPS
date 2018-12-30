@@ -1,0 +1,21 @@
+Functional requirements
+1. The system should distinguish between user and administrator privileges.
+2. The system should allow the administrator to authorize under his own unique login and password
+3. The system must provide the administrator with the ability to add, edit, delete and archive records.
+4. The system should allow the administrator to add, edit, and delete the following tags to the records: News, Events, Resources.
+4. The system should allow the administrator to add media data: photos, videos, files.
+5. The system should allow the administrator to approve and delete comments.
+6. The system should allow the user to view all records.
+7. The system should allow the user to view a separate record.
+8. The system should provide the user with the opportunity to comment on the record.
+9. The system should provide the user with the opportunity to enter a name and e-mail to comment on the entry.
+10. The system should allow the user to view all the comments on the record.
+11. The system should provide the user with the ability to search for entries by tag, by keywords, by date.
+
+
+Non-functional requirements
+1. The interface should not require additional training of users.
+2. For users, the system should be available 99.9% of the time.
+3. The system should be capable of supporting at least 1,000 simultaneously working users.
+4. The response time for typical tasks should be less than 3 seconds.
+5. The system must correspond to the modular structure.
